@@ -1,0 +1,56 @@
+name: Staging Deploy
+on:
+  push:
+    branches:
+      - master
+      - dev
+env:
+  AZURE_WEBAPP_NAME: "doctor-website" # set this to your application's name
+  AZURE_WEBAPP_PACKAGE_PATH: "build" # set this to the path to your web app project, defaults to the repository root
+  RESOURCEGROUPNAME: "vienhealth-admin-dashboard-rg"
+  LOCATION: "South Africa North"
+  HOSTINGPLANNAME: "vienhealth-admin-dashboard-plan"
+  APPINSIGHTLOCATION: "South Africa North"
+  SKU: "S1 Standard"
+  NODE_VERSION: "12.x" # set this to the node version to use
+
+jobs:
+  build-and-deploy:
+    name: Build and deploy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Use Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: yarn install and build
+        continue-on-error: false
+        run: |
+          yarn install
+          yarn build
+        env:
+          REACT_APP_ENV: development
+          REACT_APP_API_URL: https://api.staging.vienhealth.com
+          REACT_APP_PLACEHOLDER_PROFILE_PICTURE: https://via.placeholder.com/250
+          REACT_APP_VIEN_TERMS_AND_CONDITIONS: https://vienhealth.com/membership-terms
+          REACT_APP_VIEN_PRIVACY_POLICY: https://vienhealth.com/privacypolicy
+          REACT_APP_TWILIO_API_KEY: AC0d6cc0b217107548bd82cb9cee416dd1
+          REACT_APP_TWILIO_API_SECRET: 0fe21754bee1eff64a7a8bfe8f1c2460
+
+      # Login to azure
+      - name: Login to Azure
+        uses: azure/login@v1
+        continue-on-error: false
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: "Deploy to Azure Web App"
+        id: deploy-to-webapp
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          slot-name: "staging"
+          package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}

@@ -1,0 +1,33 @@
+// import partials
+@import "functions";
+@import "variables";
+@import "fonts";
+@import "utils";
+
+@import "reset";
+@import "vendor";
+
+@import "components/button";
+@import "components/tabs";
+@import "components/forms";
+@import "components/modal";
+@import "components/dropdown";
+
+// import media queries partials
+@import "sm";
+
+@media (min-width: 768px) {
+  @import "md";
+}
+
+@media (min-width: 992px) {
+  @import "lg";
+}
+
+@media (min-width: 1200px) {
+  @import "xl";
+}
+
+@media (min-width: 1440px) {
+  @import "xxl";
+}
